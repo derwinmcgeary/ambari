@@ -56,8 +56,8 @@ def isValidHostname(candidate): # Ref: https://blogs.msdn.microsoft.com/oldnewth
     candidate = candidate[:-1]
 
     for part in candidate.split("."):
-    if len(part) > 63 or len(part) == 0:
-      return False
+      if len(part) > 63 or len(part) == 0:
+        return False
 
     if part[0] == '-' or part[-1] == '-':
       return False
