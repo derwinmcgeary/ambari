@@ -40,6 +40,30 @@ def arrayFromCsvString(str):
     result_array.append(item.strip())
   return result_array
 
+def isValidHostname(candidate): # Ref: https://blogs.msdn.microsoft.com/oldnewthing/20120412-00/?p=7873/
+  allowedChars = set(string.ascii_letters + string.digits + '-' + '.')
+
+  if len(candidate) > 255 or len(candidate) < 1:
+    return False
+
+  if not set(candidate) <= allowedChars:
+    return False
+
+  if candidate[0] == '.' or candidate[-2:] == "..":
+    return False
+
+  if candidate[-1] == '.':
+    candidate = candidate[:-1]
+
+    for part in candidate.split("."):
+    if len(part) > 63 or len(part) == 0:
+      return False
+
+    if part[0] == '-' or part[-1] == '-':
+      return False
+
+  return True
+  
 def hostname(config):
   global cached_hostname
   if cached_hostname is not None:
@@ -91,7 +115,11 @@ def public_hostname(config):
     handle = urllib2.urlopen('http://169.254.169.254/latest/meta-data/public-hostname', '', 2)
     str = handle.read()
     handle.close()
-    cached_public_hostname = str.lower()
+    if isValidHostname(str.lower):
+      cached_public_hostname = str.lower()
+    else:
+      throw ValueError("Result from http://169.254.169.254/latest/meta-data/public-hostname was not a valid hostname")
+      logger.warn("Result from http://169.254.169.254/latest/meta-data/public-hostname was not a valid hostname")
     logger.info("Read public hostname '" + cached_public_hostname + "' from http://169.254.169.254/latest/meta-data/public-hostname")
   except:
     cached_public_hostname = socket.getfqdn().lower()
